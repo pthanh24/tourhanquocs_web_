@@ -1,0 +1,60 @@
+{
+    "admins": [
+          {
+            "hten": "admin",
+            "email": "ytre124@gmail.com",
+            "matkhau": "password1",
+            "sdt":"1234689",
+            "diachi":"Hà Đông- Hà Nội"
+          }
+        ], 
+
+    "customers":[
+    {
+      "name": "name 1",
+      "email": "email 1",
+      "address": "address 1",
+      "id": "1"
+    },
+    {
+      "name": "name 2",
+      "email": "email 2",
+      "address": "address 2",
+      "id": "2"
+    }
+  ],  
+
+    "tours": [
+    {
+      "tentour": "tentour 1",
+      "gia": 36,
+      "ngaykh": 1718198928,
+      "ngaykt": 1718198928,
+      "diadiem": "diadiem 1",
+      "id": "1"
+    },
+    {
+      "tentour": "tentour 2",
+      "gia": 18,
+      "ngaykh": 1718198868,
+      "ngaykt": 1718198868,
+      "diadiem": "diadiem 2",
+      "id": "2"
+    }
+  ],
+  
+  "lienhe": [
+    {
+      "id": 1,
+      "ten": "John Doe",
+      "email": "john.doe@example.com",
+      "tin_nhan": "I have a question about your services."
+    },
+    {
+      "id": 2,
+      "ten": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "tin_nhan": "Interested in scheduling a meeting."
+    }
+  ]
+}

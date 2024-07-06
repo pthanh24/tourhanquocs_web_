@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt tour và quản lý khách hàng</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .form-group {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>THÔNG TIN TOUR</h2>
+        <div class="form-group">
+            <label for="tour-code">Mã tour:</label>
+            <input type="text" class="form-control" id="tour-code" placeholder="Nhập mã tour">
+        </div>
+
+        <h4>THÔNG TIN NGƯỜI ĐẶT TOUR</h4>
+        <form id="customer-form">
+            <div class="form-group">
+                <label for="title">Danh xưng:</label>
+                <select class="form-control" id="title">
+                    <option value="mr">Ông</option>
+                    <option value="ms">Bà</option>
+                    <option value="anh">Anh</option>
+                    <option value="chi">Chị</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="name">Họ và tên:</label>
+                <input type="text" class="form-control" id="name" placeholder="Nhập họ và tên">
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="sdt">Số điện thoại:</label>
+                    <input type="tel" class="form-control" id="sdt" placeholder="Nhập số điện thoại">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Nhập địa chỉ email">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="address">Địa chỉ:</label>
+                <textarea class="form-control" id="address" placeholder="Nhập địa chỉ"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="date">Ngày khởi hành:</label>
+                <input type="date" class="form-control" id="date">
+            </div>
+            <div class="form-group">
+                <label for="quantity">Số lượng người:</label>
+                <input type="number" class="form-control" id="quantity" placeholder="Nhập số lượng người">
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="adults">Người lớn:</label>
+                    <input type="number" class="form-control" id="adults" placeholder="Nhập số người lớn">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="children">Trẻ em:</label>
+                    <input type="number" class="form-control" id="children" placeholder="Nhập số trẻ em">
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-warning" id="btnUpdate" style="display: none;">Cập nhật</button>
+                <button type="button" class="btn btn-primary" id="btnSend">Đặt tour</button>
+                <button type="button" class="btn btn-success ml-2" id="btnSuccess" style="display: none;">Đã đặt thành công</button>
+            </div>
+        </form>
+
+        
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            var editingCustomerId = null;
+
+            // Load danh sách khách hàng
+            function loadCustomers() {
+                $.get("https://66695a732e964a6dfed4c663.mockapi.io/api/customers", function(data, status) {
+                    $('#customers').empty();
+                    data.forEach(function(customer) {
+                        $('#customers').append(`
+                            <li class="list-group-item">
+                                ${customer.id}. ${customer.tourcode} - ${customer.title} ${customer.name} - ${customer.sdt} - ${customer.email} - ${customer.address} - ${customer.date} - Số lượng: ${customer.quantity}, Người lớn: ${customer.adults}, Trẻ em: ${customer.children}
+                                [<a href="#" class="delete" data-id="${customer.id}">Xóa</a>]
+                                [<a href="#" class="edit" data-id="${customer.id}">Sửa</a>]
+                            </li>
+                        `);
+                    });
+                }).fail(function() {
+                    console.error("Lỗi khi tải dữ liệu.");
+                });
+            }
+
+            // Thêm mới khách hàng
+            $('#btnSend').click(function() {
+                var tourcode = $('#tour-code').val();
+                var title = $('#title').val();
+                var name = $('#name').val();
+                var sdt = $('#sdt').val();
+                var email = $('#email').val();
+                var address = $('#address').val();
+                var date = $('#date').val();
+                var quantity = $('#quantity').val();
+                var adults = $('#adults').val();
+                var children = $('#children').val();
+                $.post("https://66695a732e964a6dfed4c663.mockapi.io/api/customers", {
+                    tourcode: tourcode,
+                    title: title,
+                    name: name,
+                    sdt: sdt,
+                    email: email,
+                    address: address,
+                    date: date,
+                    quantity: quantity,
+                    adults: adults,
+                    children: children
+                }, function(result) {
+                    loadCustomers();
+                    $('#name, #email, #address, #quantity, #adults, #children').val('');
+                    $('#btnSuccess').show();
+                }).fail(function() {
+                    console.error("Lỗi khi thêm khách hàng mới.");
+                });
+            });
+
+            // Xóa khách hàng
+            $('#customers').on('click', '.delete', function() {
+                var customerId = $(this).data('id');
+                if (confirm("Bạn có chắc chắn muốn xóa?")) {
+                    $.ajax({
+                        url: `https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${customerId}`,
+                        type: 'DELETE',
+                        success: function(result) {
+                            loadCustomers();
+                        },
+                        error: function() {
+                            console.error("Lỗi khi xóa khách hàng.");
+                        }
+                    });
+                }
+            });
+
+            // Chỉnh sửa khách hàng
+            $('#customers').on('click', '.edit', function() {
+                var customerId = $(this).data('id');
+                $.get(`https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${customerId}`, function(data, status) {
+                    editingCustomerId = data.id;
+                    $('#tour-code').val(data.tourcode);
+                    $('#title').val(data.title);
+                    $('#name').val(data.name);
+                    $('#sdt').val(data.sdt);
+                    $('#email').val(data.email);
+                    $('#address').val(data.address);
+                    $('#date').val(data.date);
+                    $('#quantity').val(data.quantity);
+                    $('#adults').val(data.adults);
+                    $('#children').val(data.children);
+                    $('#btnUpdate').show();
+                    $('#btnSend').hide();
+                    $('#btnSuccess').hide();
+                }).fail(function() {
+                    console.error("Lỗi khi tải dữ liệu khách hàng để chỉnh sửa.");
+                });
+            });
+
+            // Cập nhật khách hàng
+            $('#btnUpdate').click(function() {
+                var tourcode = $('#tour-code').val();
+                var title = $('#title').val();
+                var name = $('#name').val();
+                var sdt = $('#sdt').val();
+                var email = $('#email').val();
+                var address = $('#address').val();
+                var date = $('#date').val();
+                var quantity = $('#quantity').val();
+                var adults = $('#adults').val();
+                var children = $('#children').val();
+                $.ajax({
+                    url: `https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${editingCustomerId}`,
+                    type: 'PUT',
+                    data: {
+                        tourcode: tourcode,
+                        title: title,
+                        name: name,
+                        sdt: sdt,
+                        email: email,
+                        address: address,
+                        date: date,
+                        quantity: quantity,
+                        adults: adults,
+                        children: children
+                    },
+                    success: function(result) {
+                        loadCustomers();
+                        $('#btnUpdate').hide();
+                        $('#btnSend').show();
+                        $('#name, #email, #address, #quantity, #adults, #children').val('');
+                        $('#btnSuccess').show();
+                    },
+                    error: function() {
+                        console.error("Lỗi khi cập nhật thông tin khách hàng.");
+                    }
+                });
+            });
+
+            // Load danh sách khách hàng lần đầu
+            loadCustomers();
+        });
+    </script>
+</body>
+</html>

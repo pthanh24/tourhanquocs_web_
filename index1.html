@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đặt tour du lịch</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        .header {
+            background-color: #007bff; /* Màu nền xanh */
+            color: #d6b1b1; /* Màu chữ trắng */
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px; /* Khoảng cách phía dưới của header */
+        }
+
+        .navbar {
+            background-color: #64a2e0; /* Màu nền xám nhạt */
+            padding: 10px;
+            border-radius: 5px;
+            width: 200px; /* Độ rộng của navbar */
+            position: fixed; /* Giữ navbar cố định */
+            height: 100%; /* Chiều cao của navbar */
+            left: 0; /* Đưa navbar ra lề trái */
+            top: 0; /* Đưa navbar ra phía trên cùng */
+            z-index: 1000; /* Đảm bảo navbar hiển thị trước các phần tử khác */
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left; /* Căn trái các mục liên kết */
+            margin: 0; /* Xóa margin mặc định */
+        }
+
+        .navbar li {
+            margin-bottom: 10px; /* Khoảng cách giữa các mục liên kết */
+        }
+
+        .navbar a {
+            display: block;
+            text-decoration: none;
+            color: #333; /* Màu chữ xám đậm */
+            padding: 10px 15px; /* Kích thước và độ dày của mỗi liên kết */
+            transition: background-color 0.3s ease; /* Hiệu ứng chuyển đổi màu nền */
+        }
+
+        .navbar a:hover {
+            background-color: #007bff; /* Màu nền xanh khi hover */
+            color: #fff; /* Màu chữ trắng khi hover */
+        }
+
+        .container {
+            margin-left: 220px; /* Để nhường chỗ cho navbar */
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Quản lý đặt tour du lịch</h1>
+    </div>
+
+    <div class="navbar">
+        <ul>
+            <li><a href="" class="">Dashboard</a></li>
+            <li><a href="#" class="nav-link">Khách hàng</a></li>
+            <li><a href="#" class="nav-link">Tour</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+            <tbody>
+                <ul id="customers" class="list-group">
+                    <!-- Danh sách khách hàng sẽ được cập nhật động -->
+                </ul>
+            </tbody>
+        </table>
+    </div>
+
+
+<!-- ---------------------------------------- -->
+    <script>
+        $(document).ready(function() {
+            var editingCustomerId = null;
+
+            // Load danh sách khách hàng
+            function loadCustomers() {
+                $.get("https://66695a732e964a6dfed4c663.mockapi.io/api/customers", function(data, status) {
+                    $('#customers').empty();
+                    data.forEach(function(customer) {
+                        $('#customers').append(`
+                            <li class="list-group-item">
+                                ${customer.id}. ${customer.tourcode} - ${customer.title} ${customer.name} - ${customer.sdt} - ${customer.email} - ${customer.address} - ${customer.date} - Số lượng: ${customer.quantity}, Người lớn: ${customer.adults}, Trẻ em: ${customer.children}
+                                [<a href="#" class="delete" data-id="${customer.id}">Xóa</a>]
+                                [<a href="#" class="edit" data-id="${customer.id}">Sửa</a>]
+                            </li>
+                        `);
+                    });
+                }).fail(function() {
+                    console.error("Lỗi khi tải dữ liệu.");
+                });
+            }
+
+            // Thêm mới khách hàng
+            $('#btnSend').click(function() {
+                var tourcode = $('#tour-code').val();
+                var title = $('#title').val();
+                var name = $('#name').val();
+                var sdt = $('#sdt').val();
+                var email = $('#email').val();
+                var address = $('#address').val();
+                var date = $('#date').val();
+                var quantity = $('#quantity').val();
+                var adults = $('#adults').val();
+                var children = $('#children').val();
+                $.post("https://66695a732e964a6dfed4c663.mockapi.io/api/customers", {
+                    tourcode: tourcode,
+                    title: title,
+                    name: name,
+                    sdt: sdt,
+                    email: email,
+                    address: address,
+                    date: date,
+                    quantity: quantity,
+                    adults: adults,
+                    children: children
+                }, function(result) {
+                    loadCustomers();
+                    $('#name, #email, #address, #quantity, #adults, #children').val('');
+                    $('#btnSuccess').show();
+                }).fail(function() {
+                    console.error("Lỗi khi thêm khách hàng mới.");
+                });
+            });
+
+            // Xóa khách hàng
+            $('#customers').on('click', '.delete', function() {
+                var customerId = $(this).data('id');
+                if (confirm("Bạn có chắc chắn muốn xóa?")) {
+                    $.ajax({
+                        url: `https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${customerId}`,
+                        type: 'DELETE',
+                        success: function(result) {
+                            loadCustomers();
+                        },
+                        error: function() {
+                            console.error("Lỗi khi xóa khách hàng.");
+                        }
+                    });
+                }
+            });
+
+            // Chỉnh sửa khách hàng
+            $('#customers').on('click', '.edit', function() {
+                var customerId = $(this).data('id');
+                $.get(`https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${customerId}`, function(data, status) {
+                    editingCustomerId = data.id;
+                    $('#tour-code').val(data.tourcode);
+                    $('#title').val(data.title);
+                    $('#name').val(data.name);
+                    $('#sdt').val(data.sdt);
+                    $('#email').val(data.email);
+                    $('#address').val(data.address);
+                    $('#date').val(data.date);
+                    $('#quantity').val(data.quantity);
+                    $('#adults').val(data.adults);
+                    $('#children').val(data.children);
+                    $('#btnUpdate').show();
+                    $('#btnSend').hide();
+                    $('#btnSuccess').hide();
+                }).fail(function() {
+                    console.error("Lỗi khi tải dữ liệu khách hàng để chỉnh sửa.");
+                });
+            });
+
+            // Cập nhật khách hàng
+            $('#btnUpdate').click(function() {
+                var tourcode = $('#tour-code').val();
+                var title = $('#title').val();
+                var name = $('#name').val();
+                var sdt = $('#sdt').val();
+                var email = $('#email').val();
+                var address = $('#address').val();
+                var date = $('#date').val();
+                var quantity = $('#quantity').val();
+                var adults = $('#adults').val();
+                var children = $('#children').val();
+                $.ajax({
+                    url: `https://66695a732e964a6dfed4c663.mockapi.io/api/customers/${editingCustomerId}`,
+                    type: 'PUT',
+                    data: {
+                        tourcode: tourcode,
+                        title: title,
+                        name: name,
+                        sdt: sdt,
+                        email: email,
+                        address: address,
+                        date: date,
+                        quantity: quantity,
+                        adults: adults,
+                        children: children
+                    },
+                    success: function(result) {
+                        loadCustomers();
+                        $('#btnUpdate').hide();
+                        $('#btnSend').show();
+                        $('#name, #email, #address, #quantity, #adults, #children').val('');
+                        $('#btnSuccess').show();
+                    },
+                    error: function() {
+                        console.error("Lỗi khi cập nhật thông tin khách hàng.");
+                    }
+                });
+            });
+            
+            // Load danh sách khách hàng lần đầu
+            loadCustomers();
+        });
+    </script>
+</body>
+</html>
